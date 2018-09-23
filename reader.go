@@ -1,3 +1,4 @@
+// Package filter provides a filtered line-based io.Reader.
 package filter
 
 import (
