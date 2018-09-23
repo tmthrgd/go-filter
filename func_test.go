@@ -99,37 +99,45 @@ func TestEven(t *testing.T) {
 }
 
 func TestBefore(t *testing.T) {
-	f := Before(HasSuffixString("2"))
+	testFn := func(t *testing.T, typ MatchType) {
+		f := Before(HasSuffixString("2"), typ)
 
-	for i := 0; i < 3; i++ {
-		assert.True(t, f(test), "before, not matching: i == %d", i)
+		for i := 0; i < 3; i++ {
+			assert.True(t, f(test), "before, not matching: i == %d", i)
+		}
+
+		assert.Equal(t, typ == IncludeCurrent, f(test2), "matching condition")
+
+		for i := 0; i < 3; i++ {
+			assert.False(t, f(test), "after, not matching: i == %d", i)
+		}
+
+		for i := 0; i < 3; i++ {
+			assert.False(t, f(test2), "after, matching: i == %d", i)
+		}
 	}
-
-	assert.False(t, f(test2), "matching condition")
-
-	for i := 0; i < 3; i++ {
-		assert.False(t, f(test), "after, not matching: i == %d", i)
-	}
-
-	for i := 0; i < 3; i++ {
-		assert.False(t, f(test2), "after, matching: i == %d", i)
-	}
+	t.Run("exclude", func(t *testing.T) { testFn(t, ExcludeCurrent) })
+	t.Run("include", func(t *testing.T) { testFn(t, IncludeCurrent) })
 }
 
 func TestAfter(t *testing.T) {
-	f := After(HasSuffixString("2"))
+	testFn := func(t *testing.T, typ MatchType) {
+		f := After(HasSuffixString("2"), typ)
 
-	for i := 0; i < 3; i++ {
-		assert.False(t, f(test), "before, not matching: i == %d", i)
+		for i := 0; i < 3; i++ {
+			assert.False(t, f(test), "before, not matching: i == %d", i)
+		}
+
+		assert.Equal(t, typ == IncludeCurrent, f(test2), "matching condition")
+
+		for i := 0; i < 3; i++ {
+			assert.True(t, f(test), "after, not matching: i == %d", i)
+		}
+
+		for i := 0; i < 3; i++ {
+			assert.True(t, f(test2), "after, matching: i == %d", i)
+		}
 	}
-
-	assert.True(t, f(test2), "matching condition")
-
-	for i := 0; i < 3; i++ {
-		assert.True(t, f(test), "after, not matching: i == %d", i)
-	}
-
-	for i := 0; i < 3; i++ {
-		assert.True(t, f(test2), "after, matching: i == %d", i)
-	}
+	t.Run("exclude", func(t *testing.T) { testFn(t, ExcludeCurrent) })
+	t.Run("include", func(t *testing.T) { testFn(t, IncludeCurrent) })
 }

@@ -109,26 +109,54 @@ func Even() Func {
 	}
 }
 
-// Before matches every line before f matches the current line,
-// excluding the matching line.
+// MatchType controls whether Before and After match the current line.
+type MatchType bool
+
+const (
+	// ExcludeCurrent instructs the matching function to exclude
+	// the current line.
+	ExcludeCurrent MatchType = true
+	// IncludeCurrent instructs the matching function to include
+	// the current line.
+	IncludeCurrent MatchType = false
+)
+
+// Before matches every line before f matches the current line.
+//
+// Whether to include or exclude the current line is controlled by
+// typ. Either ExcludeCurrent or IncludeCurrent may be passed.
 //
 // It is not safe to call concurrently or reuse.
-func Before(f Func) Func {
+func Before(f Func, typ MatchType) Func {
 	ok := true
 	return func(line []byte) bool {
+		old := ok
 		ok = ok && !f(line)
+
+		if typ == IncludeCurrent {
+			return old
+		}
+
 		return ok
 	}
 }
 
-// After matches every line after f matches the current line,
-// including the matching line.
+// After matches every line after f matches the current line.
+//
+// Whether to include or exclude the current line is controlled by
+// typ. Either ExcludeCurrent or IncludeCurrent may be passed.
 //
 // It is not safe to call concurrently or reuse.
-func After(f Func) Func {
+func After(f Func, typ MatchType) Func {
 	var ok bool
 	return func(line []byte) bool {
+		old := ok
 		ok = ok || f(line)
+
+		if typ == ExcludeCurrent {
+			return old
+		}
+
 		return ok
 	}
 }
