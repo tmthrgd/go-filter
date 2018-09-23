@@ -108,3 +108,27 @@ func Even() Func {
 		return n%2 == 0
 	}
 }
+
+// Until matches every line until f matches the current line,
+// excluding the matching line.
+//
+// It is not safe to call concurrently or reuse.
+func Until(f Func) Func {
+	ok := true
+	return func(line []byte) bool {
+		ok = ok && !f(line)
+		return ok
+	}
+}
+
+// After matches every line after f matches the current line,
+// including the matching line.
+//
+// It is not safe to call concurrently or reuse.
+func After(f Func) Func {
+	var ok bool
+	return func(line []byte) bool {
+		ok = ok || f(line)
+		return ok
+	}
+}
