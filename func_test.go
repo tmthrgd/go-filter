@@ -98,8 +98,8 @@ func TestEven(t *testing.T) {
 	}
 }
 
-func TestUntil(t *testing.T) {
-	f := Until(HasSuffixString("2"))
+func TestBefore(t *testing.T) {
+	f := Before(HasSuffixString("2"))
 
 	for i := 0; i < 3; i++ {
 		assert.True(t, f(test), "before, not matching: i == %d", i)

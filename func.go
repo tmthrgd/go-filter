@@ -109,11 +109,11 @@ func Even() Func {
 	}
 }
 
-// Until matches every line until f matches the current line,
+// Before matches every line before f matches the current line,
 // excluding the matching line.
 //
 // It is not safe to call concurrently or reuse.
-func Until(f Func) Func {
+func Before(f Func) Func {
 	ok := true
 	return func(line []byte) bool {
 		ok = ok && !f(line)
