@@ -86,3 +86,25 @@ func HasSuffix(suffix []byte) Func {
 func HasSuffixString(suffix string) Func {
 	return HasSuffix([]byte(suffix))
 }
+
+// Odd matches every second line including the first.
+//
+// It is not safe to call concurrently or reuse.
+func Odd() Func {
+	var n int
+	return func(line []byte) bool {
+		n++
+		return n%2 == 1
+	}
+}
+
+// Even matches every second line excluding the first.
+//
+// It is not safe to call concurrently or reuse.
+func Even() Func {
+	var n int
+	return func(line []byte) bool {
+		n++
+		return n%2 == 0
+	}
+}
