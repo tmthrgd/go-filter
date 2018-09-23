@@ -5,8 +5,8 @@ import "bytes"
 // Func represents a line-matching function.
 type Func func(line []byte) bool
 
-// Or matches the line if any of f match the current line.
-func Or(f ...Func) Func {
+// Any matches the line if any of f match the current line.
+func Any(f ...Func) Func {
 	return func(line []byte) bool {
 		for _, f := range f {
 			if f(line) {
@@ -18,8 +18,8 @@ func Or(f ...Func) Func {
 	}
 }
 
-// And matches the line if all of f match the current line.
-func And(f ...Func) Func {
+// All matches the line if all of f match the current line.
+func All(f ...Func) Func {
 	return func(line []byte) bool {
 		for _, f := range f {
 			if !f(line) {

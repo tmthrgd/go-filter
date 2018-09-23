@@ -23,7 +23,7 @@ normal test
 case for
 this pacakge`)
 
-	rr := NewReader(r, Not(Or(ContainsString("for"), Previous(ContainsString("is")))))
+	rr := NewReader(r, Not(Any(ContainsString("for"), Previous(ContainsString("is")))))
 
 	b, err := ioutil.ReadAll(&byteReader{rr})
 	require.NoError(t, err)

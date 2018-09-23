@@ -14,20 +14,20 @@ var (
 	test2 = []byte("test2")
 )
 
-func TestOr(t *testing.T) {
-	assert.True(t, Or(True, True, True)(test), "Or(False, True, False)")
-	assert.True(t, Or(False, True, False)(test), "Or(False, True, False)")
-	assert.True(t, Or(True)(test), "Or(True)")
-	assert.False(t, Or(False)(test), "Or(False)")
-	assert.False(t, Or()(test), "Or()")
+func TestAny(t *testing.T) {
+	assert.True(t, Any(True, True, True)(test), "Any(False, True, False)")
+	assert.True(t, Any(False, True, False)(test), "Any(False, True, False)")
+	assert.True(t, Any(True)(test), "Any(True)")
+	assert.False(t, Any(False)(test), "Any(False)")
+	assert.False(t, Any()(test), "Any()")
 }
 
-func TestAnd(t *testing.T) {
-	assert.True(t, And(True, True, True)(test), "And(False, True, False)")
-	assert.False(t, And(False, True, False)(test), "And(False, True, False)")
-	assert.True(t, And(True)(test), "And(True)")
-	assert.False(t, And(False)(test), "And(False)")
-	assert.False(t, And()(test), "And()")
+func TestAll(t *testing.T) {
+	assert.True(t, All(True, True, True)(test), "All(False, True, False)")
+	assert.False(t, All(False, True, False)(test), "All(False, True, False)")
+	assert.True(t, All(True)(test), "All(True)")
+	assert.False(t, All(False)(test), "All(False)")
+	assert.False(t, All()(test), "All()")
 }
 
 func TestNot(t *testing.T) {
