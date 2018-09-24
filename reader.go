@@ -55,6 +55,44 @@ func (r *Reader) Read(p []byte) (int, error) {
 	return 0, err
 }
 
+var nl = [...]byte{'\n'}
+
+// WriteTo implements io.WriterTo and reads from the underlying reader.
+func (r *Reader) WriteTo(w io.Writer) (n int64, err error) {
+	if r.pos != -1 {
+		panic("go-filter: inconsistent usage of io.Reader and io.WriterTo")
+	}
+
+	for r.s.Scan() {
+		b := r.s.Bytes()
+		if !r.f(b) {
+			continue
+		}
+
+		nn, err := w.Write(b)
+		n += int64(nn)
+		if err != nil {
+			return n, err
+		}
+		if nn != len(b) {
+			return n, io.ErrShortWrite
+		}
+
+		if *r.nl {
+			nn, err := w.Write(nl[:])
+			n += int64(nn)
+			if err != nil {
+				return n, err
+			}
+			if nn != len(nl) {
+				return n, io.ErrShortWrite
+			}
+		}
+	}
+
+	return n, r.s.Err()
+}
+
 // Buffer sets the initial buffer to use when scanning and the maximum
 // size of buffer that may be allocated during scanning. The maximum
 // token size is the larger of max and cap(buf). If max <= cap(buf),
