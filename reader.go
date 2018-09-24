@@ -33,7 +33,7 @@ func (r *Reader) copyAndAdvance(p []byte) int {
 }
 
 // Read implements io.Reader and reads from the underlying reader.
-func (r *Reader) Read(p []byte) (int, error) {
+func (r *Reader) Read(p []byte) (n int, err error) {
 	if r.pos >= 0 {
 		return r.copyAndAdvance(p), nil
 	}
@@ -47,7 +47,7 @@ func (r *Reader) Read(p []byte) (int, error) {
 		return r.copyAndAdvance(p), nil
 	}
 
-	err := r.s.Err()
+	err = r.s.Err()
 	if err == nil {
 		err = io.EOF
 	}
