@@ -43,10 +43,10 @@ func Not(f Func) Func {
 //
 // It is not safe to call concurrently or reuse.
 func Previous(f Func) Func {
-	var prev []byte
+	var next bool
 	return func(line []byte) bool {
-		ok := prev != nil && f(prev)
-		prev = line
+		ok := next
+		next = f(line)
 		return ok
 	}
 }

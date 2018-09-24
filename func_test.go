@@ -44,6 +44,16 @@ func TestPrevious(t *testing.T) {
 	assert.True(t, f(test))
 }
 
+func TestPreviousBufferReuse(t *testing.T) {
+	f := Previous(HasPrefixString("test"))
+	buf := []byte("test buffer")
+
+	assert.False(t, f(buf))
+	copy(buf, []byte("nope"))
+	assert.True(t, f(buf))
+	assert.False(t, f(buf))
+}
+
 func TestContains(t *testing.T) {
 	assert.True(t, Contains(test)(test2), "Contains(test)(test2)")
 	assert.True(t, Contains(test2)(test2), "Contains(test)(test2)")
