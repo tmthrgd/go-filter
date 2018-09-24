@@ -1,6 +1,7 @@
 package filter
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -187,4 +188,28 @@ func TestAfter(t *testing.T) {
 	}
 	t.Run("exclude", func(t *testing.T) { testFn(t, ExcludeCurrent) })
 	t.Run("include", func(t *testing.T) { testFn(t, IncludeCurrent) })
+}
+
+func TestRegexp(t *testing.T) {
+	r := regexp.MustCompile("ab?c")
+
+	f := Regexp(r)
+	assert.True(t, f([]byte("abc")))
+	assert.True(t, f([]byte("ac")))
+	assert.False(t, f([]byte("adc")))
+	assert.True(t, f([]byte("zabce")))
+	assert.False(t, f([]byte("zabde")))
+}
+
+func TestRegexpString(t *testing.T) {
+	f := RegexpString("ab?c")
+	assert.True(t, f([]byte("abc")))
+	assert.True(t, f([]byte("ac")))
+	assert.False(t, f([]byte("adc")))
+	assert.True(t, f([]byte("zabce")))
+	assert.False(t, f([]byte("zabde")))
+
+	assert.Panics(t, func() {
+		RegexpString("ab(c") // missing closing group parenthesis
+	})
 }

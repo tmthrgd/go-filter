@@ -1,6 +1,9 @@
 package filter
 
-import "bytes"
+import (
+	"bytes"
+	"regexp"
+)
 
 // Func represents a line-matching function.
 type Func func(line []byte) bool
@@ -171,4 +174,17 @@ func After(f Func, typ MatchType) Func {
 
 		return ok
 	}
+}
+
+// Regexp uses an already compiled regular expression to match lines.
+func Regexp(r *regexp.Regexp) Func {
+	return func(line []byte) bool {
+		return r.Match(line)
+	}
+}
+
+// RegexpString compiles a regular expression to match lines. It
+// panics if the expression cannot be parsed.
+func RegexpString(r string) Func {
+	return Regexp(regexp.MustCompile(r))
 }
