@@ -108,6 +108,43 @@ func TestEven(t *testing.T) {
 	}
 }
 
+func TestAlternate(t *testing.T) {
+	newF := func(ok bool) (Func, *bool) {
+		wasCalled := new(bool)
+		return func(line []byte) bool {
+			*wasCalled = true
+			return ok
+		}, wasCalled
+	}
+
+	f1, c1 := newF(true)
+	f2, c2 := newF(false)
+	f3, c3 := newF(true)
+	f4, c4 := newF(true)
+	f5, c5 := newF(false)
+
+	f := Alternate(f1, f2, f3, f4, f5)
+
+	for i := 0; i < 3; i++ {
+		assert.True(t, f(test))
+		assert.True(t, *c1, "Func #1 should have been called (i == %d)", i)
+
+		assert.False(t, f(test))
+		assert.True(t, *c2, "Func #2 should have been called (i == %d)", i)
+
+		assert.True(t, f(test))
+		assert.True(t, *c3, "Func #3 should have been called (i == %d)", i)
+
+		assert.True(t, f(test))
+		assert.True(t, *c4, "Func #4 should have been called (i == %d)", i)
+
+		assert.False(t, f(test))
+		assert.True(t, *c5, "Func #5 should have been called (i == %d)", i)
+
+		*c1, *c2, *c3, *c4, *c5 = false, false, false, false, false
+	}
+}
+
 func TestBefore(t *testing.T) {
 	testFn := func(t *testing.T, typ MatchType) {
 		f := Before(HasSuffixString("2"), typ)

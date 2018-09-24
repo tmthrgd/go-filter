@@ -109,6 +109,18 @@ func Even() Func {
 	}
 }
 
+// Alternate cycles through f, calling the n-th f to match the n-th
+// line, it repeats once len(f) lines have been seen.
+//
+// It is not safe to call concurrently or reuse.
+func Alternate(f ...Func) Func {
+	n := -1
+	return func(line []byte) bool {
+		n++
+		return f[n%len(f)](line)
+	}
+}
+
 // MatchType controls whether Before and After match the current line.
 type MatchType bool
 
