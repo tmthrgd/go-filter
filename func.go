@@ -178,13 +178,11 @@ func After(f Func, typ MatchType) Func {
 
 // Regexp uses an already compiled regular expression to match lines.
 func Regexp(r *regexp.Regexp) Func {
-	return func(line []byte) bool {
-		return r.Match(line)
-	}
+	return r.Match
 }
 
 // RegexpString compiles a regular expression to match lines. It
 // panics if the expression cannot be parsed.
 func RegexpString(r string) Func {
-	return Regexp(regexp.MustCompile(r))
+	return regexp.MustCompile(r).Match
 }
