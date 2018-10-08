@@ -26,12 +26,16 @@ func scanLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	return 0, nil, nil
 }
 
-// dropCRLF drops a terminal \r\n from the data.
+// dropCRLF drops a terminal \r\n or \n from the data.
 func dropCRLF(data []byte) []byte {
-	data = data[:len(data)-1] // data will always be terminated with a \n
+	len := len(data)
 
-	if len(data) > 0 && data[len(data)-1] == '\r' {
-		return data[:len(data)-1]
+	if len > 2 && data[len-2] == '\r' && data[len-1] == '\n' {
+		return data[:len-2]
+	}
+
+	if len > 1 && data[len-1] == '\n' {
+		return data[:len-1]
 	}
 
 	return data

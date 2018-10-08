@@ -51,3 +51,14 @@ this package`)
 normal test`+"\r"+`
 this package`, s.String())
 }
+
+func TestReaderLastLineNoNL(t *testing.T) {
+	r := strings.NewReader("this is\na test")
+
+	rr := NewReader(r, Not(HasSuffixString("test")))
+
+	b, err := ioutil.ReadAll(&byteReader{rr})
+	require.NoError(t, err)
+
+	assert.Equal(t, "this is\n", string(b))
+}
