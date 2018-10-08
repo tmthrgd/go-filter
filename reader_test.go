@@ -21,7 +21,7 @@ func TestReaderRead(t *testing.T) {
 a very
 normal test` + "\r" + `
 case for
-this pacakge`)
+this package`)
 
 	rr := NewReader(r, Not(Any(ContainsString("for"), Previous(HasSuffixString("is")))))
 
@@ -30,7 +30,7 @@ this pacakge`)
 
 	assert.Equal(t, `this is
 normal test`+"\r"+`
-this pacakge`, string(b))
+this package`, string(b))
 }
 
 func TestReaderWriteTo(t *testing.T) {
@@ -38,7 +38,7 @@ func TestReaderWriteTo(t *testing.T) {
 a very
 normal test` + "\r" + `
 case for
-this pacakge`)
+this package`)
 
 	rr := NewReader(r, Not(Any(ContainsString("for"), Previous(HasSuffixString("is")))))
 
@@ -49,5 +49,5 @@ this pacakge`)
 
 	assert.Equal(t, `this is
 normal test`+"\r"+`
-this pacakge`, s.String())
+this package`, s.String())
 }
