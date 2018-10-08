@@ -85,6 +85,9 @@ func (r *Reader) WriteTo(w io.Writer) (n int64, err error) {
 		}
 
 		nn, err := w.Write(b)
+		if nn > len(b) {
+			panic("go-filter: invalid Write count")
+		}
 		n += int64(nn)
 		if err != nil {
 			return n, err
