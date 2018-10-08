@@ -3,48 +3,65 @@ package filter
 
 import (
 	"bufio"
+	"bytes"
 	"io"
 )
+
+func scanLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	if atEOF && len(data) == 0 {
+		return 0, nil, nil
+	}
+
+	if i := bytes.IndexByte(data, '\n'); i >= 0 {
+		// We have a full newline-terminated line.
+		return i + 1, data[0 : i+1], nil
+	}
+
+	// If we're at EOF, we have a final, non-terminated line. Return it.
+	if atEOF {
+		return len(data), data, nil
+	}
+
+	// Request more data.
+	return 0, nil, nil
+}
+
+// dropCRLF drops a terminal \r\n from the data.
+func dropCRLF(data []byte) []byte {
+	data = data[:len(data)-1] // data will always be terminated with a \n
+
+	if len(data) > 0 && data[len(data)-1] == '\r' {
+		return data[:len(data)-1]
+	}
+
+	return data
+}
 
 // Reader is a filtered line-based io.Reader.
 type Reader struct {
 	s *bufio.Scanner
 	f Func
 
-	nl *bool
-
 	pos int
-}
-
-func (r *Reader) copyAndAdvance(p []byte) int {
-	n := copy(p, r.s.Bytes()[r.pos:])
-	r.pos += n
-
-	if r.pos == len(r.s.Bytes()) && (len(p)-n >= 1 || !*r.nl) {
-		if *r.nl {
-			p[n] = '\n'
-			n++
-		}
-
-		r.pos = -1
-	}
-
-	return n
 }
 
 // Read implements io.Reader and reads from the underlying reader.
 func (r *Reader) Read(p []byte) (n int, err error) {
-	if r.pos >= 0 {
-		return r.copyAndAdvance(p), nil
+	if b := r.s.Bytes(); r.pos >= 0 && r.pos < len(b) {
+		n := copy(p, b[r.pos:])
+		r.pos += n
+		return n, nil
 	}
 
 	for r.s.Scan() {
-		if !r.f(r.s.Bytes()) {
+		b := r.s.Bytes()
+		if !r.f(dropCRLF(b)) {
 			continue
 		}
 
-		r.pos = 0
-		return r.copyAndAdvance(p), nil
+		n := copy(p, b)
+		r.pos = n
+		return n, nil
 	}
 
 	err = r.s.Err()
@@ -55,8 +72,6 @@ func (r *Reader) Read(p []byte) (n int, err error) {
 	return 0, err
 }
 
-var nl = [...]byte{'\n'}
-
 // WriteTo implements io.WriterTo and reads from the underlying reader.
 func (r *Reader) WriteTo(w io.Writer) (n int64, err error) {
 	if r.pos != -1 {
@@ -65,7 +80,7 @@ func (r *Reader) WriteTo(w io.Writer) (n int64, err error) {
 
 	for r.s.Scan() {
 		b := r.s.Bytes()
-		if !r.f(b) {
+		if !r.f(dropCRLF(b)) {
 			continue
 		}
 
@@ -76,17 +91,6 @@ func (r *Reader) WriteTo(w io.Writer) (n int64, err error) {
 		}
 		if nn != len(b) {
 			return n, io.ErrShortWrite
-		}
-
-		if *r.nl {
-			nn, err := w.Write(nl[:])
-			n += int64(nn)
-			if err != nil {
-				return n, err
-			}
-			if nn != len(nl) {
-				return n, io.ErrShortWrite
-			}
 		}
 	}
 
@@ -108,22 +112,14 @@ func (r *Reader) Buffer(buf []byte, max int) {
 
 // NewReader wraps r and returns a new reader that will only pass
 // through reads where the line is matched by f. It reads line by
-// line and preserves newlines. It does not preserve carriage returns.
+// line and preserves newlines and carriage returns.
 func NewReader(r io.Reader, f Func) *Reader {
 	s := bufio.NewScanner(r)
-
-	nl := new(bool)
-	s.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
-		advance, token, err = bufio.ScanLines(data, atEOF)
-		*nl = advance > 1 && data[advance-1] == '\n'
-		return
-	})
+	s.Split(scanLines)
 
 	return &Reader{
 		s: s,
 		f: f,
-
-		nl: nl,
 
 		pos: -1,
 	}
