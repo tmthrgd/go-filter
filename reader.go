@@ -51,7 +51,7 @@ type Reader struct {
 
 // Read implements io.Reader and reads from the underlying reader.
 func (r *Reader) Read(p []byte) (n int, err error) {
-	if b := r.s.Bytes(); r.pos >= 0 && r.pos < len(b) {
+	if b := r.s.Bytes(); r.pos < len(b) {
 		n := copy(p, b[r.pos:])
 		r.pos += n
 		return n, nil
@@ -78,7 +78,7 @@ func (r *Reader) Read(p []byte) (n int, err error) {
 
 // WriteTo implements io.WriterTo and reads from the underlying reader.
 func (r *Reader) WriteTo(w io.Writer) (n int64, err error) {
-	if r.pos != -1 {
+	if r.s.Bytes() != nil {
 		panic("go-filter: inconsistent usage of io.Reader and io.WriterTo")
 	}
 
@@ -127,7 +127,5 @@ func NewReader(r io.Reader, f Func) *Reader {
 	return &Reader{
 		s: s,
 		f: f,
-
-		pos: -1,
 	}
 }
