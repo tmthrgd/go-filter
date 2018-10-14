@@ -1,20 +1,14 @@
 package filter
 
 import (
-	"io"
 	"io/ioutil"
 	"strings"
 	"testing"
+	"testing/iotest"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-type byteReader struct{ io.Reader }
-
-func (br *byteReader) Read(p []byte) (int, error) {
-	return br.Reader.Read(p[:1])
-}
 
 func TestReaderRead(t *testing.T) {
 	r := strings.NewReader(`this is
@@ -25,7 +19,7 @@ this package`)
 
 	rr := NewReader(r, Not(Any(ContainsString("for"), Previous(HasSuffixString("is")))))
 
-	b, err := ioutil.ReadAll(&byteReader{rr})
+	b, err := ioutil.ReadAll(iotest.OneByteReader(rr))
 	require.NoError(t, err)
 
 	assert.Equal(t, `this is
@@ -57,7 +51,7 @@ func TestReaderLastLineNoNL(t *testing.T) {
 
 	rr := NewReader(r, Not(HasSuffixString("test")))
 
-	b, err := ioutil.ReadAll(&byteReader{rr})
+	b, err := ioutil.ReadAll(iotest.OneByteReader(rr))
 	require.NoError(t, err)
 
 	assert.Equal(t, "this is\n", string(b))
